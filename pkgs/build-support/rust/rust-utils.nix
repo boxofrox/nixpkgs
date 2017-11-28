@@ -6,7 +6,8 @@
 
 { lib, buildPlatform, stdenv, defaultCrateOverrides, fetchCrate, ncurses, rustc  }:
 
-let buildCrate = { crateName, crateVersion, buildDependencies, dependencies,
+let buildCrate = { crateName, crateVersion, crateAuthors,
+                   buildDependencies, dependencies,
                    completeDeps, completeBuildDeps,
                    crateFeatures, libName, build, release, libPath,
                    crateType, metadata, crateBin, finalBins,
@@ -31,6 +32,7 @@ let buildCrate = { crateName, crateVersion, buildDependencies, dependencies,
           version_ = lib.splitString "-" crateVersion;
           versionPre = if lib.tail version_ == [] then "" else builtins.elemAt version_ 1;
           version = lib.splitString "." (lib.head version_);
+          authors = lib.concatStringsSep ":" crateAuthors;
       in ''
       norm=""
       bold=""
@@ -143,6 +145,7 @@ let buildCrate = { crateName, crateVersion, buildDependencies, dependencies,
       BUILD_OUT_DIR=""
       export CARGO_PKG_NAME=${crateName}
       export CARGO_PKG_VERSION=${crateVersion}
+      export CARGO_PKG_AUTHORS="${authors}"
       export CARGO_CFG_TARGET_ARCH=${buildPlatform.parsed.cpu.name}
       export CARGO_CFG_TARGET_OS=${buildPlatform.parsed.kernel.name}
 
@@ -355,6 +358,7 @@ stdenv.mkDerivation rec {
 
     build = if crate ? build then crate.build else "";
     crateVersion = crate.version;
+    crateAuthors = if crate ? authors && lib.isList crate.authors then crate.authors else [];
     crateType =
       if lib.attrByPath ["procMacro"] false crate then "proc-macro" else
       if lib.attrByPath ["plugin"] false crate then "dylib" else "lib";
@@ -362,7 +366,7 @@ stdenv.mkDerivation rec {
     buildPhase = buildCrate {
       inherit crateName dependencies buildDependencies completeDeps completeBuildDeps
               crateFeatures libName build release libPath crateType crateVersion
-              metadata crateBin finalBins verbose colors;
+              crateAuthors metadata crateBin finalBins verbose colors;
     };
     installPhase = installCrate crateName;
 
