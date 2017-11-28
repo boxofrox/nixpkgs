@@ -160,12 +160,7 @@ let buildCrate = { crateName, crateVersion, crateAuthors,
       export CARGO_PKG_VERSION_MAJOR=${builtins.elemAt version 0}
       export CARGO_PKG_VERSION_MINOR=${builtins.elemAt version 1}
       export CARGO_PKG_VERSION_PATCH=${builtins.elemAt version 2}
-      if [ -n "${versionPre}" ]; then
-        export CARGO_PKG_VERSION_PRE="${versionPre}"
-      fi
-      if [ -n "$CARGO_PKG_VERSION_PRE" ]; then
-        unset CARGO_PKG_VERSION_PRE
-      fi
+      export CARGO_PKG_VERSION_PRE="${versionPre}"
 
 
       BUILD=""
